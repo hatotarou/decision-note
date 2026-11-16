@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>決断スキルノート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
+<style id="css">
+/* 方針：放送の流れ（診断→弱いスキル→鍛える）どおりに進む作業ノート。紙のノート風の落ち着いた配色 */
+:root{
+  --paper:#f6f5f1; --card:#ffffff; --ink:#1f2a33; --muted:#5d6872; --line:#d9dbd6;
+  --accent:#3b4f8a; --accent-soft:#e6eaf5; --gold:#a26a12; --gold-soft:#f6ecd8;
+  --good:#2f6b3b; --good-soft:#e2efe3; --warn:#9a3b25; --warn-soft:#f6e3dd;
+  --display:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+  --body:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#15171d; --card:#1e2129; --ink:#e7e9ee; --muted:#a3a9b6; --line:#343a48;
+    --accent:#a9b8ec; --accent-soft:#252c44; --gold:#e3b25e; --gold-soft:#3a2f1c;
+    --good:#8fcb98; --good-soft:#1f3324; --warn:#f0a08c; --warn-soft:#3d2620;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 64px}
+header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+h1{font-family:var(--display);font-weight:900;font-size:26px;margin:0;line-height:1.3}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+.savebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.status.dirty{background:var(--gold-soft);color:var(--gold);border-color:var(--gold)}
+.status.saved{background:var(--good-soft);color:var(--good);border-color:var(--good)}
+nav.steps{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:16px 0}
+nav.steps a{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.35}
+nav.steps a b{display:block;font-family:var(--display);font-size:14px}
+nav.steps a small{color:var(--muted);font-size:11px}
+nav.steps a[aria-current="page"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:640px){nav.steps{grid-template-columns:repeat(3,1fr)}}
+section.view h2{font-family:var(--display);font-size:20px;margin:8px 0 4px}
+.quote{border-left:3px solid var(--gold);background:var(--gold-soft);padding:8px 12px;margin:0 0 16px;font-size:13.5px;border-radius:0 6px 6px 0}
+.quote b{color:var(--gold)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:3px}
+input[type=text],select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:7px 9px}
+textarea{min-height:60px;resize:vertical}
+button{font:inherit;font-size:13.5px;cursor:pointer;border-radius:6px;border:1px solid var(--accent);background:var(--card);color:var(--accent);padding:6px 12px}
+button.primary{background:var(--accent);color:var(--card)}
+button.ghost{border-color:var(--line);color:var(--muted)}
+button.danger{border-color:var(--warn);color:var(--warn)}
+button.on{background:var(--accent);color:var(--card)}
+button.on-good{background:var(--good);border-color:var(--good);color:var(--card)}
+button.on-wild{background:var(--gold);border-color:var(--gold);color:var(--card)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.ex{border-color:var(--gold);color:var(--gold)}
+.tag.rev{border-color:var(--accent);color:var(--accent)}
+.tag.good{background:var(--good-soft);color:var(--good);border-color:var(--good)}
+.tag.wild{background:var(--gold-soft);color:var(--gold);border-color:var(--gold)}
+.tag.warn{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.warn{color:var(--warn);font-size:12.5px}
+.note{color:var(--muted);font-size:12.5px}
+.big{font-family:var(--display);font-size:34px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+.q{border-top:1px solid var(--line);padding:10px 0}
+.q:first-child{border-top:0}
+.q h3{font-size:14.5px;margin:0 0 4px;line-height:1.5}
+.scale{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.scale button{min-width:44px;padding:6px 10px}
+details summary{cursor:pointer;color:var(--accent);font-size:13px}
+details p{margin:4px 0 0;font-size:13.5px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:700}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar.w i{background:var(--warn)}
+.bar.t{position:relative;overflow:visible}
+.bar.t u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);text-decoration:none}
+.bar.t i{border-radius:4px}
+.drill{border-top:1px dashed var(--line);padding:8px 0}
+.drill:first-of-type{border-top:0}
+.idea{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px dashed var(--line);padding:6px 0}
+.idea span.t{flex:1;min-width:160px}
+.sym{display:flex;gap:4px}
+.sym button{padding:2px 9px;min-width:34px}
+.empty{color:var(--muted);font-size:13.5px;padding:8px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal .card{max-width:640px;width:100%;max-height:85vh;overflow:auto}
+footer{margin-top:28px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script id="appjs">
+(function(){
+"use strict";
+var KEY="decision-note-draft-v1", CKEY="decision-note-content-v1", SKEY="decision-note-state-v1";
+var VIEWS=[
+ {id:"test",n:"1",t:"診断する",s:"18問・採点"},
+ {id:"skills",n:"2",t:"結果を見る",s:"六つのスキル"},
+ {id:"ideas",n:"3",t:"選択肢を出す",s:"スキル2"},
+ {id:"eval",n:"4",t:"比べる",s:"スキル3・4"},
+ {id:"meaning",n:"5",t:"意味を確かめる",s:"スキル5"},
+ {id:"share",n:"6",t:"伝える",s:"スキル1・6"},
+ {id:"train",n:"7",t:"鍛える",s:"8割をめざす"}
+];
+
+var ART=!!document.getElementById("state"); /* true：Claudeのノート。false：Webページ版（枠だけ。内容はブラウザに入れる） */
+var storageOK=(function(){ try{ localStorage.setItem("dn-test","1"); localStorage.removeItem("dn-test"); return true; }catch(e){ return false; } })();
+var C=null, REV=[], Q=[], SCALE={}, SKILLS=[], BANDS=[], EXREV=0, EXAMPLES=[], DR=[], T={};
+function applyContent(c){ C=c; REV=c.REV; Q=c.Q; SCALE=c.SCALE; SKILLS=c.SKILLS; BANDS=c.BANDS; EXREV=c.EXREV; EXAMPLES=c.EXAMPLES; DR=c.DR; T=c.T; }
+function validContent(c){ return !!(c&&c.Q&&c.Q.length&&c.SKILLS&&c.SKILLS.length&&c.DR&&c.T&&c.REV&&c.BANDS&&c.EXAMPLES); }
+(function(){ var c=null, el=document.getElementById("content");
+  if(el){ try{c=JSON.parse(el.textContent);}catch(e){} }
+  else if(storageOK){ try{c=JSON.parse(localStorage.getItem(CKEY)||"null");}catch(e){} }
+  if(validContent(c)) applyContent(c); })();
+var armDel="";
+var state=load(null);
+var dirty=false, lastSaved=state.updatedAt||0, artifactApi=null, view=currentView(), modal=null;
+
+function missingEx(st){ return EXAMPLES.filter(function(e){ return !(st.decisions||[]).some(function(x){return x.id===e.id;}); }); }
+function addEx(st){ var m=missingEx(st); if(!st.decisions) st.decisions=[]; m.forEach(function(e){ st.decisions.push(JSON.parse(JSON.stringify(e))); }); if(m.length&&!st.current) st.current=m[0].id; return m; }
+function blank(){ return {v:1,updatedAt:0,answers:{},testedAt:"",current:"",decisions:[]}; }
+function load(given){
+  var s=null, el=document.getElementById("state");
+  if(given) s=given;
+  else if(el){ try{s=JSON.parse(el.textContent);}catch(e){} }
+  else if(storageOK){ try{s=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){} }
+  if(!s||typeof s!=="object") s=blank();
+  if(!s.answers) s.answers={}; if(!s.decisions) s.decisions=[];
+  var out=s;
+  if(ART&&!given){ try{var d=JSON.parse(localStorage.getItem(KEY)||"null"); if(d&&d.updatedAt>(s.updatedAt||0)){d._draft=true; out=d;}}catch(e){} }
+  if(C&&(out.exRev||0)<EXREV){ var m=addEx(out); if(m.length){ out.current=m[0].id; } out.exRev=EXREV; if(ART&&out!==s) out._draft=true; }
+  return out;
+}
+function persistWeb(){ if(!storageOK) return false; try{ var s=JSON.parse(JSON.stringify(state)); delete s._draft; localStorage.setItem(SKEY,JSON.stringify(s)); return true; }catch(e){ return false; } }
+function currentView(){var h=(location.hash||"").replace("#",""); return VIEWS.some(function(v){return v.id===h;})?h:"test";}
+function esc(t){return String(t==null?"":t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function uid(){return "i"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function cur(){ for(var i=0;i<state.decisions.length;i++) if(state.decisions[i].id===state.current) return state.decisions[i]; return state.decisions[0]||null; }
+function touch(rerender){ state.updatedAt=Date.now();
+  if(ART){ dirty=true; try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} }
+  else { dirty=!persistWeb(); if(!dirty) lastSaved=state.updatedAt; }
+  if(rerender) render(); else renderStatus(); }
+function val(n){ var a=Number(state.answers[n])||0; if(!a) return 0; return REV.indexOf(n)>=0 ? 6-a : a; }
+function answered(){ var c=0; for(var i=1;i<=18;i++) if(Number(state.answers[i])) c++; return c; }
+function total(){ var t=0; for(var i=1;i<=18;i++) t+=val(i); return t; }
+function skillScore(s){ var t=0; s.qs.forEach(function(q){t+=val(q);}); return t; }
+
+/* ---------- 保存 ---------- */
+function buildDoc(){
+  var s=JSON.parse(JSON.stringify(state)); delete s._draft;
+  var json=JSON.stringify(s).replace(/</g,"\\u003c");
+  return "<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>決断スキルノート</title>\n"+
+   "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n"+
+   "<link href=\"https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap\" rel=\"stylesheet\">\n"+
+   "<style id=\"css\">"+document.getElementById("css").textContent+"</style>\n</head>\n<body>\n<div id=\"app\"></div>\n<script type=\"application/json\" id=\"content\">"+document.getElementById("content").textContent+"<\/script>\n<script type=\"application/json\" id=\"state\">"+json+"<\/script>\n<script id=\"appjs\">"+document.getElementById("appjs").textContent+"<\/script>\n</body>\n</html>\n";
+}
+function save(){
+  if(!ART){ dirty=!persistWeb(); if(!dirty) lastSaved=state.updatedAt||Date.now(); renderStatus(); return; }
+  if(!artifactApi){ openModal("保存できません","このページを開いている場所では保存機能が使えません。書いた内容はこのブラウザに下書きとして残っています。消えないように「Notion用にコピー」で写しを取ってください。"); return; }
+  var st=document.getElementById("status"); if(st) st.textContent="保存中…";
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  artifactApi.publish(buildDoc()).then(function(){}, function(err){
+    try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+    var code=(err&&(err.code||err.message))||"";
+    var msg=(/not_granted|not_writer/.test(code))?"このページを編集する権限がないため保存できません。内容はこのブラウザに下書きとして残っています。":
+            (/conflict/.test(code))?"別の画面で先に保存されたため、この変更は保存されませんでした。ページが新しい版に切り替わります。":
+            "保存に失敗しました（"+code+"）。内容はこのブラウザに下書きとして残っています。時間をおいてもう一度「保存する」を押してください。";
+    openModal("保存できませんでした",msg); renderStatus();
+  });
+}
+
+/* ---------- 書き出し ---------- */
+function toMarkdown(){
+  var L=[]; L.push("# 決断スキルノート（"+new Date().toLocaleDateString("ja-JP")+"）","");
+  if(answered()){
+    L.push("## 診断"+(state.testedAt?"（"+state.testedAt+"）":""),"","- 合計："+total()+"点（18〜90点。回答 "+answered()+"/18問）");
+    SKILLS.forEach(function(s){ L.push("- "+s.k+". "+s.name+"："+skillScore(s)+" / "+s.max+"点"); });
+    L.push("");
+  }
+  var TT=tr(); var dn=DR.filter(function(d){return TT.counts[d.id];}); if(dn.length||TT.history.length){ L.push("## トレーニング（目標 "+(TT.target||80)+"%）",""); dn.forEach(function(d){ L.push("- "+d.t+"："+TT.counts[d.id]+"回（最後 "+(TT.last[d.id]||"")+"）"); }); TT.history.forEach(function(x){ L.push("- 再診断 "+x.date+"：合計"+x.total+"点（"+x.scores.join("・")+"）"); }); L.push(""); }
+  state.decisions.forEach(function(d){
+    L.push("## 決めたいこと："+d.title+(d.example?"（放送の例）":""),"");
+    L.push("### 選択肢（"+d.ideas.length+"個）");
+    d.ideas.forEach(function(i){ L.push("- "+i.text+(i.pick==="good"?"【うまくいきそう】":i.pick==="wild"?"【これはないでしょ】":"")); });
+    var ev=evalTargets(d); if(ev.length){ L.push("","### 比べる（リスク／結果予測／実現可能性）");
+      ev.forEach(function(i){ var e=d.evals[i.id]||{}; L.push("- "+i.text+"："+(e.risk||"—")+" / "+(e.result||"—")+" / "+(e.feas||"—")+(e.worst?"　一番やばいリスク："+e.worst:"")+(e.memo?"　メモ："+e.memo:"")); }); }
+    var m=d.meaning||{}; if(m.q1||m.q2||m.q3){ L.push("","### 意味を確かめる","- 自分にとっての意味："+(m.q1||""),"- 誰を幸せにできるか："+(m.q2||""),"- 適当に扱ったら誰が悲しむか："+(m.q3||"")); }
+    var sh=d.share||{}; if(sh.basis||sh.story){ L.push("","### 伝える","- 根拠："+(sh.basis||""),"- 実現可能性："+(sh.feas||""),"- 具体的な計画："+(sh.plan||""),"- どれぐらい成功すると思うか："+(sh.success||""),"- ストーリー："+(sh.story||"")); }
+    L.push("");
+  });
+  return L.join("\n");
+}
+function packText(){ var s=JSON.parse(JSON.stringify(state)); delete s._draft; return JSON.stringify({kind:"decision-note-pack",v:1,exportedAt:new Date().toISOString(),content:C,state:s}); }
+function importPack(txt){
+  var p; try{ p=JSON.parse(txt); }catch(e){ return "貼り付けた内容を読み取れませんでした。コピーしたデータを、そのまま全部貼り付けてください。"; }
+  if(!p||p.kind!=="decision-note-pack"||!validContent(p.content)) return "これは決断スキルノートのデータではないようです。";
+  applyContent(p.content);
+  if(storageOK){ try{ localStorage.setItem(CKEY,JSON.stringify(p.content)); }catch(e){ storageOK=false; } }
+  state=load(p.state&&typeof p.state==="object"?p.state:blank()); delete state._draft;
+  dirty=!persistWeb(); lastSaved=dirty?0:Date.now(); view=currentView(); modal=null;
+  return "";
+}
+function legacyCopy(txt){ try{ var ta=document.createElement("textarea"); ta.value=txt; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.top="0"; ta.style.opacity="0"; document.body.appendChild(ta); ta.focus(); ta.select(); var ok=document.execCommand("copy"); document.body.removeChild(ta); return !!ok; }catch(e){ return false; } }
+function copyText(txt,btn){
+  var done=function(){ if(btn){var o=btn.textContent; btn.textContent="コピーしました"; setTimeout(function(){btn.textContent=o;},1600);} };
+  var fb=function(){ if(legacyCopy(txt)) done(); else showCopy(txt); };
+  try{ navigator.clipboard.writeText(txt).then(done,fb); }catch(e){ fb(); }
+}
+function showCopy(txt){ openModal("このまま選択してコピーしてください","<textarea readonly style=\"min-height:280px\">"+esc(txt)+"</textarea>",true); }
+function openModal(t,b,raw){ modal={title:t,body:raw?b:esc(b)}; render(); }
+
+/* ---------- 画面 ---------- */
+function renderStatus(){
+  var st=document.getElementById("status"); if(!st) return;
+  var when=function(t){ return new Date(t).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}); };
+  if(!ART){
+    if(!storageOK||dirty){ st.className="status dirty"; st.textContent="保存できていません（バックアップをコピーしてください）"; }
+    else { st.className="status"+(lastSaved?" saved":""); st.textContent=lastSaved?("このブラウザに保存済み "+when(lastSaved)):"入力すると自動で保存します"; }
+    return;
+  }
+  if(dirty||state._draft){ st.className="status dirty"; st.textContent="未保存の変更あり"; }
+  else { st.className="status"+(lastSaved?" saved":""); st.textContent=lastSaved?("保存済み "+when(lastSaved)):"まだ保存していません"; }
+}
+function setupBox(inModal){
+  return '<label for="packin">データ</label><textarea id="packin" style="min-height:150px" placeholder="ここをクリックして貼り付け（Ctrl+V／Macは⌘+V）"></textarea>'+
+   '<div class="row" style="margin-top:8px"><button class="'+(inModal?'danger':'primary')+'" data-act="importpack">'+(inModal?'読み込んで置き換える':'読み込む')+'</button>'+
+   '<span class="'+(storageOK?'note':'warn')+'">'+(storageOK?'このブラウザに保存できます。':'このブラウザ（この埋め込み）では保存が使えません。読み込めますが、閉じると消えます。')+'</span></div><p id="importmsg" class="warn" hidden></p>';
+}
+function renderSetup(){
+  document.getElementById("app").innerHTML='<div class="wrap"><header class="top"><div><h1>決断スキルノート</h1><p class="sub">このページは道具の枠だけです。データを貼り付けると使えるようになります。</p></div></header>'+
+   '<section class="view"><div class="card"><h2 style="margin-top:0">最初の準備（1回だけ）</h2><ol style="padding-left:20px;margin:6px 0 12px"><li>Claudeの「決断スキルノート」を開き、右上の「Miro用データをコピー」を押す。</li><li>下の枠をクリックして、貼り付ける。</li><li>「読み込む」を押す。</li></ol>'+setupBox(false)+'</div></section></div>';
+}
+function render(){
+  if(!C){ renderSetup(); return; }
+  var btns=ART?'<button class="primary" data-act="save">保存する</button><button data-act="export">Notion用にコピー</button><button data-act="pack">Miro用データをコピー</button>'
+              :'<button data-act="pack">バックアップをコピー</button><button data-act="export">Notion用にコピー</button><button class="ghost" data-act="openimport">データを読み込む</button>';
+  var h='<div class="wrap"><header class="top"><div><h1>決断スキルノート</h1><p class="sub">'+T.sub+'</p></div>'+
+   '<div class="savebar"><span id="status" class="status"></span>'+btns+'</div></header><nav class="steps" aria-label="手順">';
+  VIEWS.forEach(function(v){ h+='<a href="#'+v.id+'"'+(v.id===view?' aria-current="page"':'')+'><b>'+v.n+'. '+v.t+'</b><small>'+v.s+'</small></a>'; });
+  h+='</nav><section class="view">'+({test:vTest,skills:vSkills,ideas:vIdeas,eval:vEval,meaning:vMeaning,share:vShare,train:vTrain}[view])()+'</section>';
+  h+='<footer>放送で話された設問・採点・基準・例を使っています。放送で話されていない部分を補った欄は、頭に【見本】と付けています。ノート側で決めたのは「弱いスキルを点数の割合（満点に対して何%か）で比べる」ことと、メモ欄の分け方です。'+
+   (ART?'保存した内容はこのページに書き込まれ、次に開いたときも残ります。':'入力した内容は、このブラウザの中に自動で保存されます。別のPCやブラウザには引き継がれません。消えると困る内容は「バックアップをコピー」で写しを取ってください。')+'</footer></div>';
+  if(modal) h+='<div class="modal" role="dialog" aria-modal="true"><div class="card"><h2 style="margin-top:0;font-family:var(--display);font-size:18px">'+esc(modal.title)+'</h2><div>'+modal.body+'</div><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="primary" data-act="closemodal">閉じる</button></div></div></div>';
+  document.getElementById("app").innerHTML=h; renderStatus();
+}
+function hint(t){ return '<details style="margin-top:4px"><summary>放送の例</summary><p>'+esc(t)+'</p></details>'; }
+function decisionBar(){
+  var d=cur(); var h='<div class="card"><div class="grid2"><div><label for="dsel">決めたいこと</label><select id="dsel" data-g="current">';
+  state.decisions.forEach(function(x){ h+='<option value="'+x.id+'"'+(x.id===state.current?' selected':'')+'>'+esc(x.title)+(x.example?'（放送の例）':'')+'</option>'; });
+  h+='</select></div><form id="newd"><label for="dnew">新しく決めたいことを追加</label><div class="row"><input type="text" id="dnew" placeholder="例：今の会社にとどまるか、転職するか" style="flex:1"><button type="submit">追加</button></div></form></div>';
+  if(d&&d.example) h+='<p class="note" style="margin:8px 0 0">'+esc(d.note||"これは放送の例です。")+' <button class="danger" data-act="deldec" style="padding:1px 8px;font-size:12px">'+(armDel===d.id?'もう一度押すと消えます':'この例を消す')+'</button></p>';
+  else if(d) h+='<p class="note" style="margin:8px 0 0"><button class="ghost" data-act="deldec" style="padding:1px 8px;font-size:12px">'+(armDel===d.id?'もう一度押すと削除します':'この「決めたいこと」を削除')+'</button></p>';
+  var mx=missingEx(state);
+  if(mx.length) h+='<p class="note" style="margin:8px 0 0">消えている放送の例が'+mx.length+'件あります。 <button data-act="restoreex" style="padding:1px 8px;font-size:12px">放送の例を元に戻す</button></p>';
+  return h+'</div>';
+}
+
+function vTest(){
+  var n=answered();
+  var h='<h2>1. 18問に答える</h2><div class="quote">'+T.qTest+'</div>';
+  h+='<div class="card"><div class="row" style="justify-content:space-between"><span>回答 <b>'+n+'</b> / 18問</span><span class="note">'+T.scaleLegend+'</span></div></div><div class="card">';
+  Q.forEach(function(q){
+    var a=Number(state.answers[q[0]])||0, rev=REV.indexOf(q[0])>=0;
+    h+='<div class="q"><h3>第'+q[0]+'問'+(rev?' <span class="tag rev">★反転</span>':'')+'　'+esc(q[1])+'</h3>';
+    if(q[2]) h+='<details><summary>話者の説明</summary><p>'+esc(q[2])+'</p></details>';
+    h+='<div class="scale" role="group" aria-label="第'+q[0]+'問の点数">';
+    for(var k=1;k<=5;k++) h+='<button class="'+(a===k?'on':'')+'" data-act="ans" data-q="'+q[0]+'" data-v="'+k+'" title="'+SCALE[k]+'">'+k+'</button>';
+    h+='</div>'+(a&&rev?'<p class="note" style="margin:4px 0 0">反転後：'+(6-a)+'点</p>':'')+'</div>';
+  });
+  h+='</div>';
+  h+='<div class="row"><a href="#skills"><button class="primary" type="button">結果を見る</button></a><button class="ghost" data-act="resettest">回答を消す</button></div>';
+  return h;
+}
+
+function vSkills(){
+  var n=answered();
+  var h='<h2>2. 結果を見る：満点から一番遠いスキルから鍛える</h2>';
+  h+='<div class="quote">'+T.qSkills+'</div>';
+  if(n<18) h+='<p class="warn">まだ '+(18-n)+'問 答えていません。全部答えると正しい合計になります。</p>';
+  var t=total(), band=null; BANDS.forEach(function(b){ if(t>=b[0]&&t<=b[1]) band=b; });
+  h+='<div class="card"><div class="row" style="align-items:baseline;gap:16px"><div><div class="big">'+t+'</div><span class="note">合計（18〜90点）</span></div><div style="flex:1;min-width:220px">'+(band&&n===18?'<b>'+band[0]+'〜'+band[1]+'点</b>：'+esc(band[2]):'<span class="note">18問すべてに答えると、目安が出ます。</span>')+'</div></div>';
+  h+='<div class="row" style="margin-top:8px"><label for="tdate" style="margin:0">診断した日</label><input type="text" id="tdate" data-g="testedAt" value="'+esc(state.testedAt)+'" placeholder="例：2026/11/09" style="max-width:180px"></div></div>';
+  var ratios=SKILLS.map(function(s){return skillScore(s)/s.max;});
+  var minR=n===18?Math.min.apply(null,ratios):null;
+  h+='<div class="card tablewrap"><table><tr><th>スキル</th><th>足す問題</th><th>点数</th><th></th><th>'+T.thWarn+'</th></tr>';
+  SKILLS.forEach(function(s,ix){
+    var sc=skillScore(s), low=s.warn!==null&&n===18&&sc<s.warn, weakest=minR!==null&&ratios[ix]===minR;
+    h+='<tr><td><b>'+s.k+'. '+esc(s.name)+'</b>'+(weakest?' <span class="tag warn">一番遠い</span>':'')+(s.note?'<br><span class="note">'+esc(s.note)+'</span>':'')+'</td><td class="num">'+s.qs.join("・")+'</td><td class="num"><b>'+sc+'</b> / '+s.max+'</td><td style="width:120px"><div class="bar'+(low?' w':'')+'"><i style="width:'+Math.round(sc/s.max*100)+'%"></i></div></td><td>'+esc(s.warnText)+(low?' <span class="tag warn">当てはまる</span>':'')+'</td></tr>';
+  });
+  h+='</table><p class="note">★の問題（4・5・6・8・18）は反転した点で計算しています。「一番遠い」は、満点に対する割合が一番低いスキルです（スキルごとに満点が違う（20点・15点・10点）ため、ノート側で割合で比べています）。</p></div>';
+  h+='<details class="card"><summary>放送の例：結果の読み方</summary><p>'+T.exSkills+'</p></details>';
+  h+='<p><a href="#train"><button class="primary" type="button">全部を8割以上にするトレーニングへ →</button></a></p>';
+  SKILLS.forEach(function(s){
+    h+='<details class="card"'+(minR!==null&&skillScore(s)/s.max===minR?' open':'')+'><summary><b>'+s.k+'. '+esc(s.name)+'</b> の鍛え方（放送より）</summary><ul style="margin:8px 0 0;padding-left:18px">';
+    s.how.forEach(function(x){ h+='<li>'+esc(x)+'</li>'; });
+    h+='</ul><p><a href="#'+s.go+'">このノートで練習する →</a></p></details>';
+  });
+  return h;
+}
+
+function vIdeas(){
+  var d=cur(); var h='<h2>3. 選択肢を出す（スキル2：'+esc(SKILLS[1].name)+'）</h2>';
+  h+='<div class="quote">'+T.qIdeas+'</div>';
+  h+=decisionBar(); if(!d) return h;
+  h+='<details class="card"><summary>放送の例：選択肢の出し方</summary><p>'+T.exIdeas+'</p></details>';
+  var good=d.ideas.filter(function(i){return i.pick==="good";}).length, wild=d.ideas.filter(function(i){return i.pick==="wild";}).length;
+  h+='<div class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><div><span class="big">'+d.ideas.length+'</span> <span class="note">個 出した</span></div><span class="note">'+(d.ideas.length<20?'まず20個まで、あと'+(20-d.ideas.length)+'個':d.ideas.length<30?'30個まで、あと'+(30-d.ideas.length)+'個':'30個を超えました。余裕があれば50〜100個')+'</span></div>';
+  h+='<form id="newidea" class="row" style="margin-top:8px"><label for="itext" class="note" style="width:100%;margin:0">'+T.ideaLabel+'</label><input type="text" id="itext" style="flex:1" placeholder="思いついたら入れて Enter"><button type="submit" class="primary">追加</button></form></div>';
+  h+='<div class="card"><div class="row" style="justify-content:space-between"><b>5個に絞る</b><span><span class="tag good">うまくいきそう '+good+'/3</span> <span class="tag wild">これはないでしょ '+wild+'/2</span></span></div>';
+  if(!d.ideas.length) h+='<p class="empty">まだ選択肢がありません。</p>';
+  d.ideas.forEach(function(i){
+    h+='<div class="idea"><span class="t">'+esc(i.text)+'</span><button class="'+(i.pick==="good"?'on-good':'ghost')+'" data-act="pick" data-id="'+i.id+'" data-v="good">うまくいきそう</button><button class="'+(i.pick==="wild"?'on-wild':'ghost')+'" data-act="pick" data-id="'+i.id+'" data-v="wild">これはないでしょ</button><button class="ghost" data-act="delidea" data-id="'+i.id+'" aria-label="削除">×</button></div>';
+  });
+  h+='<p id="pickmsg" class="warn" hidden></p></div>';
+  if(good+wild===5) h+='<p><a href="#eval"><button class="primary" type="button">5個そろいました。比べる →</button></a></p>';
+  return h;
+}
+function evalTargets(d){ var p=d.ideas.filter(function(i){return i.pick;}); return p.length?p:d.ideas; }
+
+function vEval(){
+  var d=cur(); var h='<h2>4. 比べる（スキル3：'+esc(SKILLS[2].name)+'／スキル4：'+esc(SKILLS[3].name)+'）</h2>';
+  h+='<div class="quote">'+T.qEval+'</div>';
+  h+=decisionBar(); if(!d) return h;
+  var list=evalTargets(d);
+  if(!list.length) return h+'<p class="empty">「3. 選択肢を出す」で選択肢を入れると、ここで比べられます。</p>';
+  if(!d.ideas.some(function(i){return i.pick;})) h+='<p class="note">5個に絞っていないので、出した選択肢を全部表示しています。</p>';
+  list.forEach(function(i){
+    var e=d.evals[i.id]||{}; var oc=["risk","result","feas"].filter(function(k){return e[k]==="○";}).length;
+    h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(i.text)+'</b>'+(i.pick?' <span class="tag '+i.pick+'">'+(i.pick==="good"?'うまくいきそう':'これはないでしょ')+'</span>':'')+'<span class="tag">○ '+oc+'個</span></div>';
+    h+='<div style="margin-top:8px"><label for="w-'+i.id+'">一番やばいリスク（一番失敗したらどうなるか）</label><textarea id="w-'+i.id+'" data-e="worst" data-id="'+i.id+'" style="min-height:44px" placeholder="'+T.phWorst+'">'+esc(e.worst)+'</textarea></div>';
+    h+='<div class="grid2" style="grid-template-columns:repeat(3,1fr);margin-top:8px">';
+    [["risk","リスク評価"],["result","結果予測"],["feas","実現可能性"]].forEach(function(c){
+      h+='<div><label>'+c[1]+'</label><div class="sym">'; ["○","△","×"].forEach(function(s){ h+='<button class="'+(e[c[0]]===s?'on':'ghost')+'" data-act="sym" data-id="'+i.id+'" data-k="'+c[0]+'" data-v="'+s+'">'+s+'</button>'; }); h+='</div></div>';
+    });
+    h+='</div><div style="margin-top:8px"><label for="m-'+i.id+'">メモ（数字・根拠）</label><textarea id="m-'+i.id+'" data-e="memo" data-id="'+i.id+'" placeholder="'+T.phMemo+'">'+esc(e.memo)+'</textarea></div></div>';
+  });
+  if(d.example) h+='<p class="note">'+T.evalExNote+'</p>';
+  return h;
+}
+
+function vMeaning(){
+  var d=cur(); var h='<h2>5. 意味を確かめる（スキル5：'+esc(SKILLS[4].name)+'）</h2>';
+  h+='<div class="quote">'+T.qMeaning+'</div>';
+  h+=decisionBar(); if(!d) return h;
+  var m=d.meaning||(d.meaning={q1:"",q2:"",q3:"",checks:{}});
+  h+='<details class="card"><summary>放送の例：意味が見いだせていないとき</summary><p>'+T.exMeaning+'</p></details>';
+  var PHM=T.PHM;
+  h+='<div class="card">';
+  T.meaningQs.forEach(function(x){
+    h+='<div style="margin-bottom:10px"><label for="'+x[0]+'">'+x[1]+'</label><textarea id="'+x[0]+'" data-m="'+x[0]+'" placeholder="'+PHM[x[0]]+'">'+esc(m[x[0]])+'</textarea></div>';
+  });
+  h+='</div><div class="card"><b>選んだ選択肢をチェックする</b>';
+  T.meaningChecks.forEach(function(x){
+    h+='<label style="margin-top:6px;color:var(--ink);font-size:14px"><input type="checkbox" data-c="'+x[0]+'"'+(m.checks&&m.checks[x[0]]?' checked':'')+'> '+x[1]+'</label>';
+  });
+  h+='<p class="note">'+T.meaningNote+'</p></div>';
+  return h;
+}
+
+function vShare(){
+  var d=cur(); var h='<h2>6. 伝える（スキル1：'+esc(SKILLS[0].name)+'／スキル6：'+esc(SKILLS[5].name)+'）</h2>';
+  h+='<div class="quote">'+T.qShare+'</div>';
+  h+=decisionBar(); if(!d) return h;
+  var s=d.share||(d.share={});
+  var EXS=T.EXS;
+  var PHS=T.PHS;
+  h+='<div class="card"><b>環境のチェック（スキル1）</b>';
+  T.shareEnv.forEach(function(x){
+    h+='<div style="margin-top:8px"><label for="s-'+x[0]+'">'+x[1]+'</label><textarea id="s-'+x[0]+'" data-s="'+x[0]+'">'+esc(s[x[0]])+'</textarea>'+hint(EXS[x[0]])+'</div>';
+  });
+  h+='</div><div class="card"><b>伝える内容（スキル6）</b>';
+  T.shareMsg.forEach(function(x){
+    h+='<div style="margin-top:8px"><label for="s-'+x[0]+'">'+x[1]+'</label><textarea id="s-'+x[0]+'" data-s="'+x[0]+'" placeholder="'+PHS[x[0]]+'"'+(x[0]==="story"?' style="min-height:110px"':'')+'>'+esc(s[x[0]])+'</textarea></div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+
+function tr(){ if(!state.train) state.train={target:80,counts:{},last:{},history:[]}; if(!state.train.counts) state.train.counts={}; if(!state.train.last) state.train.last={}; if(!state.train.history) state.train.history=[]; return state.train; }
+function qtext(n){ for(var i=0;i<Q.length;i++) if(Q[i][0]===n) return Q[i][1]; return ""; }
+function vTrain(){
+  var T=tr(), pct=Math.min(100,Math.max(1,Number(T.target)||80)), n=answered(), t=total();
+  var h='<h2>7. 鍛える：全部のスキルを'+pct+'%以上にする</h2>';
+  h+='<div class="card"><div class="row"><label for="tgt" style="margin:0">目標（満点に対する%）</label><input type="text" id="tgt" data-t="target" value="'+esc(T.target)+'" style="max-width:80px"><span class="note">初期値は80。この%は、ノート側で置いた目標で、放送の基準ではありません。</span></div>';
+  h+='<p class="note" style="margin:8px 0 0">点を上げるのは、答えを高めに付けることではなく、18問が示す行動が実際に増えることです。鍛えたあとに、もう一度18問に答えて確かめます（下の記録）。この診断は検証された診断ではないので（出どころの注意は診断結果ページに記載）、点数は目安として使ってください。</p></div>';
+  if(n<18) h+='<p class="warn">まだ '+(18-n)+'問 答えていません。「1. 診断する」で答えると、正しい差が出ます。</p>';
+  var rows=SKILLS.map(function(k){ var sc=skillScore(k), tgt=Math.ceil(k.max*pct/100-1e-9); return {s:k,sc:sc,tgt:tgt,gap:Math.max(0,tgt-sc)}; });
+  var tt=Math.ceil(90*pct/100-1e-9);
+  h+='<div class="card"><div class="row" style="align-items:baseline;gap:16px"><div><span class="big">'+t+'</span> <span class="note">/ 90点（目標 '+tt+'点）</span></div><span class="note">'+(t>=tt?'合計は目標に届いています':'合計であと'+(tt-t)+'点')+'。ただし、合計よりも、六つがそれぞれ目標に届くことを目標にしています。</span></div></div>';
+  var order=rows.slice().sort(function(a,b){ return b.gap-a.gap; });
+  var hist=T.history;
+  order.forEach(function(r){
+    var k=r.s, ok=r.gap===0&&n===18;
+    h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+k.k+'. '+esc(k.name)+'</b><span>'+(n<18?'':ok?'<span class="tag good">目標に届いている</span>':'<span class="tag warn">あと '+r.gap+'点</span>')+' <span class="tag">今 '+r.sc+' / '+k.max+'点（目標 '+r.tgt+'点）</span></span></div>';
+    h+='<div class="bar t'+(ok?'':' w')+'" style="margin:8px 0"><i style="width:'+Math.round(r.sc/k.max*100)+'%"></i><u style="left:'+pct+'%" title="目標"></u></div>';
+    h+='<div class="tablewrap"><table><tr><th>問</th><th>内容</th><th>今の点（反転後）</th></tr>';
+    k.qs.forEach(function(q){ var v=val(q); h+='<tr><td class="num">第'+q+'問'+(REV.indexOf(q)>=0?' ★':'')+'</td><td>'+esc(qtext(q))+'</td><td class="num"><b>'+(v||'—')+'</b> / 5'+(v&&v<=3?' <span class="tag ex">伸ばしどころ</span>':'')+'</td></tr>'; });
+    h+='</table></div>';
+    h+='<div style="margin-top:8px"><b style="font-size:13.5px">トレーニング</b>';
+    DR.filter(function(d){return d.k===k.k;}).forEach(function(d){
+      var c=T.counts[d.id]||0;
+      h+='<div class="drill"><div class="row" style="justify-content:space-between"><b style="font-size:14px">'+esc(d.t)+'</b><span class="tag'+(d.src==="ノート側"?' ex':'')+'">'+esc(d.src)+'</span></div><p style="margin:2px 0 6px;font-size:13.5px">'+esc(d.st)+'</p><div class="row"><span class="note">目安 '+esc(d.min)+'（ノート側の目安）</span><button data-act="done" data-id="'+d.id+'">やった</button>'+(c?'<button class="ghost" data-act="undone" data-id="'+d.id+'" style="padding:2px 8px">取り消す</button><span class="note">'+c+'回 ／ 最後 '+esc(T.last[d.id]||"")+'</span>':'<span class="note">まだ0回</span>')+'<a href="#'+d.go+'">このノートでやる →</a></div></div>';
+    });
+    h+='</div></div>';
+  });
+  h+='<div class="card"><b>再診断の記録</b><p class="note" style="margin:4px 0 8px">鍛えたら「1. 診断する」で18問をもう一度答えて、ここで記録します。いつの回答かが残ります。</p><div class="row"><button class="primary" data-act="snap"'+(n<18?' disabled':'')+'>今の回答を記録する</button>'+(n<18?'<span class="note">18問すべて答えると記録できます</span>':'')+'</div>';
+  if(hist.length){ h+='<div class="tablewrap"><table><tr><th>日付</th><th>合計</th>'+SKILLS.map(function(k){return '<th>'+k.k+'</th>';}).join('')+'<th></th></tr>';
+    hist.forEach(function(x,i){ h+='<tr><td>'+esc(x.date)+'</td><td class="num"><b>'+x.total+'</b></td>'+x.scores.map(function(v,j){ var okk=v>=Math.ceil(SKILLS[j].max*pct/100-1e-9); return '<td class="num">'+v+'/'+SKILLS[j].max+(okk?' ✓':'')+'</td>'; }).join('')+'<td><button class="ghost" data-act="delsnap" data-i="'+i+'" style="padding:1px 8px;font-size:12px">削除</button></td></tr>'; });
+    h+='</table></div><p class="note">✓は、今の目標%に届いている印です。</p>'; }
+  h+='</div>';
+  return h;
+}
+
+/* ---------- 操作 ---------- */
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]"); if(!b) return;
+  var act=b.getAttribute("data-act"), d=C?cur():null;
+  if(act!=="deldec") armDel="";
+  if(act==="save") save();
+  else if(act==="export") copyText(toMarkdown(),b);
+  else if(act==="pack") copyText(packText(),b);
+  else if(act==="openimport") openModal("データを読み込む",'<p class="note">「Miro用データをコピー」または「バックアップをコピー」でコピーしたデータを貼り付けます。今このブラウザにあるデータは、貼り付けたデータに置き換わります。</p>'+setupBox(true),true);
+  else if(act==="importpack"){ var pin=document.getElementById("packin"), err=importPack(pin?pin.value.trim():""); if(err){ var im=document.getElementById("importmsg"); if(im){ im.hidden=false; im.textContent=err; } } else render(); }
+  else if(act==="closemodal"){ modal=null; render(); }
+  else if(act==="ans"){ state.answers[b.getAttribute("data-q")]=Number(b.getAttribute("data-v")); touch(true); }
+  else if(act==="resettest"){ state.answers={}; touch(true); }
+  else if(act==="pick"&&d){
+    var id=b.getAttribute("data-id"), v=b.getAttribute("data-v"), it=d.ideas.filter(function(x){return x.id===id;})[0]; if(!it) return;
+    if(it.pick===v){ it.pick=""; touch(true); return; }
+    var lim=v==="good"?3:2, cnt=d.ideas.filter(function(x){return x.pick===v;}).length;
+    if(cnt>=lim){ var m=document.getElementById("pickmsg"); if(m){ m.hidden=false; m.textContent=(v==="good"?"「うまくいきそう」は3つまで":"「これはないでしょ」は2つまで")+"です。先にどれかを外してください。"; } return; }
+    it.pick=v; touch(true);
+  }
+  else if(act==="delidea"&&d){ var id2=b.getAttribute("data-id"); d.ideas=d.ideas.filter(function(x){return x.id!==id2;}); delete d.evals[id2]; touch(true); }
+  else if(act==="sym"&&d){ var e2=d.evals[b.getAttribute("data-id")]||(d.evals[b.getAttribute("data-id")]={}); var k=b.getAttribute("data-k"), v2=b.getAttribute("data-v"); e2[k]=(e2[k]===v2?"":v2); touch(true); }
+  else if(act==="done"){ var T=tr(), id3=b.getAttribute("data-id"); T.counts[id3]=(T.counts[id3]||0)+1; T.last[id3]=new Date().toLocaleDateString("ja-JP"); touch(true); }
+  else if(act==="undone"){ var T2=tr(), id4=b.getAttribute("data-id"); T2.counts[id4]=Math.max(0,(T2.counts[id4]||0)-1); touch(true); }
+  else if(act==="snap"){ if(answered()<18) return; var T3=tr(); T3.history.push({date:new Date().toLocaleDateString("ja-JP"),total:total(),scores:SKILLS.map(skillScore)}); touch(true); }
+  else if(act==="delsnap"){ var T4=tr(); T4.history.splice(Number(b.getAttribute("data-i")),1); touch(true); }
+  else if(act==="restoreex"){ var mm=addEx(state); if(mm.length) state.current=mm[0].id; touch(true); }
+  else if(act==="deldec"&&d){ if(armDel!==d.id){ armDel=d.id; render(); return; } armDel=""; state.decisions=state.decisions.filter(function(x){return x.id!==d.id;}); state.current=state.decisions[0]?state.decisions[0].id:""; touch(true); }
+});
+document.addEventListener("input",function(e){
+  if(!C) return;
+  var t=e.target, d=cur();
+  if(t.hasAttribute("data-t")){ tr()[t.getAttribute("data-t")]=t.value; touch(false); return; }
+  if(t.hasAttribute("data-g")){ state[t.getAttribute("data-g")]=t.value; touch(t.tagName==="SELECT"); return; }
+  if(!d) return;
+  if(t.hasAttribute("data-e")){ var id=t.getAttribute("data-id"); (d.evals[id]||(d.evals[id]={}))[t.getAttribute("data-e")]=t.value; touch(false); }
+  else if(t.hasAttribute("data-m")){ d.meaning[t.getAttribute("data-m")]=t.value; touch(false); }
+  else if(t.hasAttribute("data-c")){ d.meaning.checks=d.meaning.checks||{}; d.meaning.checks[t.getAttribute("data-c")]=t.checked; touch(false); }
+  else if(t.hasAttribute("data-s")){ d.share[t.getAttribute("data-s")]=t.value; touch(false); }
+});
+document.addEventListener("submit",function(e){
+  e.preventDefault(); if(!C) return; var f=e.target;
+  if(f.id==="newd"){ var v=document.getElementById("dnew").value.trim(); if(!v) return; var id=uid(); state.decisions.push({id:id,example:false,title:v,ideas:[],evals:{},meaning:{q1:"",q2:"",q3:"",checks:{}},share:{}}); state.current=id; touch(true); }
+  else if(f.id==="newidea"){ var d=cur(), x=document.getElementById("itext").value.trim(); if(!d||!x) return; d.ideas.push({id:uid(),text:x,pick:""}); touch(true); var n=document.getElementById("itext"); if(n) n.focus(); }
+});
+window.addEventListener("hashchange",function(){ view=currentView(); render(); window.scrollTo(0,0); });
+window.addEventListener("pagehide",function(){ if(!ART&&C) persistWeb(); });
+
+render();
+if(window.claude&&typeof window.claude.use==="function"){ window.claude.use("artifact").then(function(api){ artifactApi=api; },function(){}); }
+})();
+</script>
+</body>
+</html>
