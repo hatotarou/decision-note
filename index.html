@@ -204,15 +204,34 @@ function toMarkdown(){
   return L.join("\n");
 }
 function packText(){ var s=JSON.parse(JSON.stringify(state)); delete s._draft; return JSON.stringify({kind:"decision-note-pack",v:1,exportedAt:new Date().toISOString(),content:C,state:s}); }
-function importPack(txt){
+function importPack(txt,keepLocal){
   if(!txt) return "枠が空です。貼り付けができていないようです。枠の中をクリックしてから、Ctrl+V（Macは⌘+V）を押してください。";
   var p; try{ p=JSON.parse(txt); }catch(e){ return "貼り付けたものが、ノートのデータではないようです（"+txt.length+"文字。先頭は「"+txt.slice(0,24)+"」）。コピーがうまくいっていない可能性があります。下の「データのファイルから読み込む」を使うか、Claudeのノートで「Miro用データをコピー」を押し直してください。"; }
   if(!p||p.kind!=="decision-note-pack"||!validContent(p.content)) return "これは決断スキルノートのデータではないようです。";
   applyContent(p.content);
   if(storageOK){ try{ localStorage.setItem(CKEY,JSON.stringify(p.content)); }catch(e){ storageOK=false; } }
-  state=load(p.state&&typeof p.state==="object"?p.state:blank()); delete state._draft;
-  dirty=!persistWeb(); lastSaved=dirty?0:Date.now(); view=currentView(); modal=null;
+  var local=null; if(keepLocal&&storageOK){ try{ local=JSON.parse(localStorage.getItem(SKEY)||"null"); }catch(e){} }
+  state=load(local||(p.state&&typeof p.state==="object"?p.state:blank())); delete state._draft;
+  dirty=!persistWeb(); lastSaved=dirty?0:(local&&state.updatedAt?state.updatedAt:Date.now()); view=currentView(); modal=null;
   return "";
+}
+/* 鍵つきのURLで開いたとき：暗号化したデータ(d.bin)を取りにいき、このブラウザの中で元に戻す */
+function getKey(){ var m=/[?&#]k=([A-Za-z0-9_-]{20,})/.exec(location.search+location.hash); return m?m[1]:""; }
+function b64u(x){ x=x.replace(/-/g,"+").replace(/_/g,"/"); while(x.length%4) x+="="; var bin=atob(x), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
+function fetchPack(k){
+  return fetch("d.bin",{cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("データを取得できません "+r.status); return r.arrayBuffer(); })
+   .then(function(buf){ var u=new Uint8Array(buf); return crypto.subtle.importKey("raw",b64u(k),{name:"AES-GCM"},false,["decrypt"]).then(function(key){ return crypto.subtle.decrypt({name:"AES-GCM",iv:u.slice(0,12)},key,u.slice(12)); }); })
+   .then(function(pt){ return new TextDecoder().decode(pt); });
+}
+var bootMsg="";
+function boot(){
+  if(ART) return; var k=getKey(); if(!k) return;
+  if(!window.fetch||!window.crypto||!crypto.subtle){ if(!C){ bootMsg="このブラウザでは自動の読み込みが使えません。下の方法で読み込めます。"; render(); } return; }
+  if(!C){ bootMsg="データを読み込んでいます…"; render(); }
+  fetchPack(k).then(function(txt){
+    if(!C){ var err=importPack(txt,true); bootMsg=err?("自動の読み込みに失敗しました。"+err):""; render(); return; }
+    try{ var p=JSON.parse(txt); if(p&&validContent(p.content)&&JSON.stringify(p.content)!==JSON.stringify(C)){ applyContent(p.content); if(storageOK){ try{ localStorage.setItem(CKEY,JSON.stringify(p.content)); }catch(e){} } render(); } }catch(e){}
+  },function(e){ if(!C){ bootMsg="自動の読み込みに失敗しました（鍵が違うか、通信できていません）。下の方法で読み込めます。"; render(); } });
 }
 function legacyCopy(txt){ try{ var ta=document.createElement("textarea"); ta.value=txt; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.top="0"; ta.style.opacity="0"; document.body.appendChild(ta); ta.focus(); ta.select(); var ok=document.execCommand("copy"); document.body.removeChild(ta); return !!ok; }catch(e){ return false; } }
 function copyText(txt,btn){
@@ -243,7 +262,7 @@ function setupBox(inModal){
 }
 function renderSetup(){
   document.getElementById("app").innerHTML='<div class="wrap"><header class="top"><div><h1>決断スキルノート</h1><p class="sub">このページは道具の枠だけです。データを貼り付けると使えるようになります。</p></div></header>'+
-   '<section class="view"><div class="card"><h2 style="margin-top:0">最初の準備（1回だけ）</h2><ol style="padding-left:20px;margin:6px 0 12px"><li>Claudeの「決断スキルノート」を開き、右上の「Miro用データをコピー」を押す。</li><li>下の枠をクリックして、貼り付ける。</li><li>「読み込む」を押す。</li></ol>'+setupBox(false)+'</div></section></div>';
+   '<section class="view">'+(bootMsg?'<p class="'+(bootMsg.indexOf("読み込んでいます")>=0?'note':'warn')+'">'+esc(bootMsg)+'</p>':'')+'<div class="card"><h2 style="margin-top:0">最初の準備（1回だけ）</h2><ol style="padding-left:20px;margin:6px 0 12px"><li>Claudeの「決断スキルノート」を開き、右上の「Miro用データをコピー」を押す。</li><li>下の枠をクリックして、貼り付ける。</li><li>「読み込む」を押す。</li></ol>'+setupBox(false)+'</div></section></div>';
 }
 function render(){
   if(!C){ renderSetup(); return; }
@@ -483,6 +502,7 @@ document.addEventListener("change",function(e){
 });
 
 render();
+boot();
 if(window.claude&&typeof window.claude.use==="function"){ window.claude.use("artifact").then(function(api){ artifactApi=api; },function(){}); }
 })();
 </script>
