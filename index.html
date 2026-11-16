@@ -205,7 +205,8 @@ function toMarkdown(){
 }
 function packText(){ var s=JSON.parse(JSON.stringify(state)); delete s._draft; return JSON.stringify({kind:"decision-note-pack",v:1,exportedAt:new Date().toISOString(),content:C,state:s}); }
 function importPack(txt){
-  var p; try{ p=JSON.parse(txt); }catch(e){ return "貼り付けた内容を読み取れませんでした。コピーしたデータを、そのまま全部貼り付けてください。"; }
+  if(!txt) return "枠が空です。貼り付けができていないようです。枠の中をクリックしてから、Ctrl+V（Macは⌘+V）を押してください。";
+  var p; try{ p=JSON.parse(txt); }catch(e){ return "貼り付けたものが、ノートのデータではないようです（"+txt.length+"文字。先頭は「"+txt.slice(0,24)+"」）。コピーがうまくいっていない可能性があります。下の「データのファイルから読み込む」を使うか、Claudeのノートで「Miro用データをコピー」を押し直してください。"; }
   if(!p||p.kind!=="decision-note-pack"||!validContent(p.content)) return "これは決断スキルノートのデータではないようです。";
   applyContent(p.content);
   if(storageOK){ try{ localStorage.setItem(CKEY,JSON.stringify(p.content)); }catch(e){ storageOK=false; } }
@@ -216,10 +217,10 @@ function importPack(txt){
 function legacyCopy(txt){ try{ var ta=document.createElement("textarea"); ta.value=txt; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.top="0"; ta.style.opacity="0"; document.body.appendChild(ta); ta.focus(); ta.select(); var ok=document.execCommand("copy"); document.body.removeChild(ta); return !!ok; }catch(e){ return false; } }
 function copyText(txt,btn){
   var done=function(){ if(btn){var o=btn.textContent; btn.textContent="コピーしました"; setTimeout(function(){btn.textContent=o;},1600);} };
-  var fb=function(){ if(legacyCopy(txt)) done(); else showCopy(txt); };
+  var fb=function(){ legacyCopy(txt); showCopy(txt); };
   try{ navigator.clipboard.writeText(txt).then(done,fb); }catch(e){ fb(); }
 }
-function showCopy(txt){ openModal("このまま選択してコピーしてください","<textarea readonly style=\"min-height:280px\">"+esc(txt)+"</textarea>",true); }
+function showCopy(txt){ openModal("コピーしてください","<p class=\"note\">自動でコピーできなかった可能性があります。下の枠の中をクリックして、Ctrl+A（全部選択）→ Ctrl+C（コピー）を押してください。Macは⌘+A → ⌘+C です。</p><textarea id=\"copybox\" readonly style=\"min-height:240px\">"+esc(txt)+"</textarea>",true); var ta=document.getElementById("copybox"); if(ta){ try{ ta.focus(); ta.select(); }catch(e){} } }
 function openModal(t,b,raw){ modal={title:t,body:raw?b:esc(b)}; render(); }
 
 /* ---------- 画面 ---------- */
@@ -237,7 +238,8 @@ function renderStatus(){
 function setupBox(inModal){
   return '<label for="packin">データ</label><textarea id="packin" style="min-height:150px" placeholder="ここをクリックして貼り付け（Ctrl+V／Macは⌘+V）"></textarea>'+
    '<div class="row" style="margin-top:8px"><button class="'+(inModal?'danger':'primary')+'" data-act="importpack">'+(inModal?'読み込んで置き換える':'読み込む')+'</button>'+
-   '<span class="'+(storageOK?'note':'warn')+'">'+(storageOK?'このブラウザに保存できます。':'このブラウザ（この埋め込み）では保存が使えません。読み込めますが、閉じると消えます。')+'</span></div><p id="importmsg" class="warn" hidden></p>';
+   '<span class="'+(storageOK?'note':'warn')+'">'+(storageOK?'このブラウザに保存できます。':'このブラウザ（この埋め込み）では保存が使えません。読み込めますが、閉じると消えます。')+'</span></div><p id="importmsg" class="warn" hidden></p>'+
+   '<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)"><label for="packfile">または、データのファイルから読み込む（選ぶとすぐ読み込みます'+(inModal?'。今のデータは置き換わります':'')+'）</label><input type="file" id="packfile" accept=".txt,.json,text/plain,application/json"></div>';
 }
 function renderSetup(){
   document.getElementById("app").innerHTML='<div class="wrap"><header class="top"><div><h1>決断スキルノート</h1><p class="sub">このページは道具の枠だけです。データを貼り付けると使えるようになります。</p></div></header>'+
@@ -472,6 +474,13 @@ document.addEventListener("submit",function(e){
 });
 window.addEventListener("hashchange",function(){ view=currentView(); render(); window.scrollTo(0,0); });
 window.addEventListener("pagehide",function(){ if(!ART&&C) persistWeb(); });
+document.addEventListener("change",function(e){
+  var t=e.target; if(!t||t.id!=="packfile"||!t.files||!t.files[0]) return;
+  var r=new FileReader();
+  r.onload=function(){ var err=importPack(String(r.result||"").replace(/^﻿/,"").trim()); if(err){ var im=document.getElementById("importmsg"); if(im){ im.hidden=false; im.textContent=err; } } else render(); };
+  r.onerror=function(){ var im=document.getElementById("importmsg"); if(im){ im.hidden=false; im.textContent="ファイルを読めませんでした。"; } };
+  r.readAsText(t.files[0]);
+});
 
 render();
 if(window.claude&&typeof window.claude.use==="function"){ window.claude.use("artifact").then(function(api){ artifactApi=api; },function(){}); }
