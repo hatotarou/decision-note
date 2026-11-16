@@ -104,6 +104,16 @@ nav.subnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
 nav.subnav a{text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:4px 14px;font-size:13.5px;background:var(--card)}
 nav.subnav a[aria-current="page"]{background:var(--accent);color:var(--card);border-color:var(--accent)}
 button:disabled{cursor:default}
+.lpic{position:relative;width:100%;aspect-ratio:1000/760}
+.lbox{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.4}
+.lbox b{font-family:var(--display);font-size:15px;color:var(--warn)}
+.lbox .lfields{display:grid;gap:6px;margin-top:6px}
+.lbox textarea{min-height:0;height:100%;resize:none;font-size:13px;padding:5px 7px}
+.l-flame{left:1%;top:27%;width:31%;height:26%}.l-flame .lfields{height:calc(100% - 46px)}
+.l-handle{left:68%;top:2%;width:31%;height:27%}.l-handle .lfields{height:calc(100% - 46px);grid-template-rows:1fr 1fr}
+.l-prot{left:68%;top:33%;width:31%;height:30%}.l-prot .lfields{height:calc(100% - 46px);grid-template-rows:1fr 1fr}
+.l-light{left:6%;top:73%;width:88%;height:25%}.l-light .lfields{height:calc(100% - 30px);grid-template-columns:1fr 1fr 1fr}
+@media (max-width:760px){.lpicwrap{display:none}}
 </style>
 </head>
 <body>
@@ -301,11 +311,34 @@ function flameCard(){
   var f=state.lantern&&state.lantern.flame; if(!f||!T.flameLabel) return "";
   return '<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(T.flameLabel)+'</b><span class="tag ex">ノート側</span></div><p style="margin:4px 0 0;white-space:pre-wrap">'+esc(f)+(state.lantern.copy?"\n"+esc(state.lantern.copy):"")+'</p><p class="note" style="margin:4px 0 0">'+esc(T.flameAsk)+' <a href="#lantern">書き直す →</a></p></div>';
 }
+function lanternPic(L,s){
+  var pos=["flame","prot","handle","light"];
+  var svg='<svg viewBox="0 0 1000 760" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%">'+
+   '<circle cx="500" cy="350" r="235" fill="var(--gold-soft)"/>'+
+   '<path d="M432 150 C432 30, 568 30, 568 150" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>'+
+   '<rect x="470" y="118" width="60" height="22" rx="6" fill="var(--ink)"/>'+
+   '<rect x="436" y="140" width="128" height="40" rx="10" fill="var(--ink)"/>'+
+   '<rect x="412" y="186" width="176" height="250" rx="28" fill="var(--card)" stroke="var(--ink)" stroke-width="8"/>'+
+   '<path d="M500 248 C546 300 556 344 500 396 C444 344 454 300 500 248 Z" fill="var(--gold)"/>'+
+   '<path d="M500 318 C520 340 522 360 500 384 C478 360 480 340 500 318 Z" fill="var(--gold-soft)"/>'+
+   '<rect x="484" y="396" width="32" height="40" fill="var(--ink)"/>'+
+   '<rect x="400" y="436" width="200" height="30" rx="6" fill="var(--ink)"/><rect x="378" y="470" width="244" height="28" rx="8" fill="var(--ink)"/>'+
+   '<g stroke="var(--warn)" stroke-width="2.5" stroke-dasharray="3 6" fill="none"><path d="M474 330 L322 300"/><path d="M588 300 L678 330"/><path d="M566 84 L678 84"/><path d="M330 508 L330 556"/></g>'+
+   '<g fill="var(--warn)"><circle cx="474" cy="330" r="8"/><circle cx="588" cy="300" r="8"/><circle cx="566" cy="84" r="8"/><circle cx="330" cy="508" r="8"/></g></svg>';
+  var h='<div class="card lpicwrap"><div class="lpic">'+svg;
+  L.parts.forEach(function(p,i){
+    h+='<div class="lbox l-'+pos[i]+'"><b>'+esc(p.label)+'</b> <span class="note">'+esc(p.sub)+'</span><div class="lfields">';
+    p.qs.forEach(function(q){ h+='<textarea data-l="'+q.k+'" aria-label="'+esc(p.label+"："+q.q)+'" placeholder="'+esc(q.q)+'">'+esc(s[q.k])+'</textarea>'; });
+    h+='</div></div>';
+  });
+  return h+'</div><p class="note lpicnote" style="margin:8px 0 0">絵の中の欄と、下の説明つきの欄は同じものです。どちらに書いても両方に入ります。ランタンの絵はノート用に描いたもので、放送のワークシートそのものではありません。</p></div>';
+}
 function vLantern(){
   var L=C.LANTERN; if(!L) return '<h2>8. 価値観</h2><p class="empty">このデータには、このタブの中身が入っていません。</p>';
   var s=state.lantern||(state.lantern={});
   var h='<h2>8. '+esc(L.title)+'</h2><div class="quote">'+L.intro+'</div>';
   if(L.how) h+='<details class="card"><summary>放送の例：進め方</summary><p>'+esc(L.how)+'</p></details>';
+  h+=lanternPic(L,s);
   L.parts.forEach(function(p){
     h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(p.label)+'　<span class="note">'+esc(p.sub)+'</span></b><span class="tag">'+esc(p.step)+'</span></div><p class="note" style="margin:4px 0 0">'+esc(p.desc)+'</p>';
     p.qs.forEach(function(q){ h+='<div style="margin-top:8px"><label for="l-'+q.k+'">'+esc(q.q)+'</label><textarea id="l-'+q.k+'" data-l="'+q.k+'" placeholder="'+esc(q.ph||"")+'">'+esc(s[q.k])+'</textarea></div>'; });
@@ -578,7 +611,7 @@ document.addEventListener("click",function(e){
 document.addEventListener("input",function(e){
   if(!C) return;
   var t=e.target, d=cur();
-  if(t.hasAttribute("data-l")){ (state.lantern||(state.lantern={}))[t.getAttribute("data-l")]=t.value; touch(false); return; }
+  if(t.hasAttribute("data-l")){ var lk=t.getAttribute("data-l"); (state.lantern||(state.lantern={}))[lk]=t.value; var same=document.querySelectorAll('[data-l="'+lk+'"]'); for(var si=0;si<same.length;si++){ if(same[si]!==t) same[si].value=t.value; } touch(false); return; }
   if(t.hasAttribute("data-t")){ tr()[t.getAttribute("data-t")]=t.value; touch(false); return; }
   if(t.hasAttribute("data-g")){ state[t.getAttribute("data-g")]=t.value; touch(t.tagName==="SELECT"); return; }
   if(!d) return;
