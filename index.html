@@ -37,13 +37,13 @@ h1{font-family:var(--display);font-weight:900;font-size:26px;margin:0;line-heigh
 .status{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 .status.dirty{background:var(--gold-soft);color:var(--gold);border-color:var(--gold)}
 .status.saved{background:var(--good-soft);color:var(--good);border-color:var(--good)}
-nav.steps{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:16px 0}
+nav.steps{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:16px 0}
 nav.steps a{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.35}
 nav.steps a b{display:block;font-family:var(--display);font-size:14px}
 nav.steps a small{color:var(--muted);font-size:11px}
 nav.steps a[aria-current="page"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media (max-width:640px){nav.steps{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:760px){nav.steps{grid-template-columns:repeat(4,1fr)}}
 section.view h2{font-family:var(--display);font-size:20px;margin:8px 0 4px}
 .quote{border-left:3px solid var(--gold);background:var(--gold-soft);padding:8px 12px;margin:0 0 16px;font-size:13.5px;border-radius:0 6px 6px 0}
 .quote b{color:var(--gold)}
@@ -113,7 +113,8 @@ var VIEWS=[
  {id:"eval",n:"4",t:"比べる",s:"スキル3・4"},
  {id:"meaning",n:"5",t:"意味を確かめる",s:"スキル5"},
  {id:"share",n:"6",t:"伝える",s:"スキル1・6"},
- {id:"train",n:"7",t:"鍛える",s:"8割をめざす"}
+ {id:"train",n:"7",t:"鍛える",s:"8割をめざす"},
+ {id:"lantern",n:"8",t:"価値観",s:"物差しを作る"}
 ];
 
 var ART=!!document.getElementById("state"); /* true：Claudeのノート。false：Webページ版（枠だけ。内容はブラウザに入れる） */
@@ -191,6 +192,7 @@ function toMarkdown(){
     L.push("");
   }
   var TT=tr(); var dn=DR.filter(function(d){return TT.counts[d.id];}); if(dn.length||TT.history.length){ L.push("## トレーニング（目標 "+(TT.target||80)+"%）",""); dn.forEach(function(d){ L.push("- "+d.t+"："+TT.counts[d.id]+"回（最後 "+(TT.last[d.id]||"")+"）"); }); TT.history.forEach(function(x){ L.push("- 再診断 "+x.date+"：合計"+x.total+"点（"+x.scores.join("・")+"）"); }); L.push(""); }
+  lanternMd(L);
   state.decisions.forEach(function(d){
     L.push("## 決めたいこと："+d.title+(d.example?"（放送の例）":""),"");
     L.push("### 選択肢（"+d.ideas.length+"個）");
@@ -271,13 +273,39 @@ function render(){
   var h='<div class="wrap"><header class="top"><div><h1>決断スキルノート</h1><p class="sub">'+T.sub+'</p></div>'+
    '<div class="savebar"><span id="status" class="status"></span>'+btns+'</div></header><nav class="steps" aria-label="手順">';
   VIEWS.forEach(function(v){ h+='<a href="#'+v.id+'"'+(v.id===view?' aria-current="page"':'')+'><b>'+v.n+'. '+v.t+'</b><small>'+v.s+'</small></a>'; });
-  h+='</nav><section class="view">'+({test:vTest,skills:vSkills,ideas:vIdeas,eval:vEval,meaning:vMeaning,share:vShare,train:vTrain}[view])()+'</section>';
+  h+='</nav><section class="view">'+({test:vTest,skills:vSkills,ideas:vIdeas,eval:vEval,meaning:vMeaning,share:vShare,train:vTrain,lantern:vLantern}[view])()+'</section>';
   h+='<footer>放送で話された設問・採点・基準・例を使っています。放送で話されていない部分を補った欄は、頭に【見本】と付けています。ノート側で決めたのは「弱いスキルを点数の割合（満点に対して何%か）で比べる」ことと、メモ欄の分け方です。'+
    (ART?'保存した内容はこのページに書き込まれ、次に開いたときも残ります。':'入力した内容は、このブラウザの中に自動で保存されます。別のPCやブラウザには引き継がれません。消えると困る内容は「バックアップをコピー」で写しを取ってください。')+'</footer></div>';
   if(modal) h+='<div class="modal" role="dialog" aria-modal="true"><div class="card"><h2 style="margin-top:0;font-family:var(--display);font-size:18px">'+esc(modal.title)+'</h2><div>'+modal.body+'</div><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="primary" data-act="closemodal">閉じる</button></div></div></div>';
   document.getElementById("app").innerHTML=h; renderStatus();
 }
 function hint(t){ return '<details style="margin-top:4px"><summary>放送の例</summary><p>'+esc(t)+'</p></details>'; }
+function flameCard(){
+  var f=state.lantern&&state.lantern.flame; if(!f||!T.flameLabel) return "";
+  return '<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(T.flameLabel)+'</b><span class="tag ex">ノート側</span></div><p style="margin:4px 0 0;white-space:pre-wrap">'+esc(f)+(state.lantern.copy?"\n"+esc(state.lantern.copy):"")+'</p><p class="note" style="margin:4px 0 0">'+esc(T.flameAsk)+' <a href="#lantern">書き直す →</a></p></div>';
+}
+function vLantern(){
+  var L=C.LANTERN; if(!L) return '<h2>8. 価値観</h2><p class="empty">このデータには、このタブの中身が入っていません。</p>';
+  var s=state.lantern||(state.lantern={});
+  var h='<h2>8. '+esc(L.title)+'</h2><div class="quote">'+L.intro+'</div>';
+  if(L.how) h+='<details class="card"><summary>放送の例：進め方</summary><p>'+esc(L.how)+'</p></details>';
+  L.parts.forEach(function(p){
+    h+='<div class="card"><div class="row" style="justify-content:space-between"><b>'+esc(p.label)+'　<span class="note">'+esc(p.sub)+'</span></b><span class="tag">'+esc(p.step)+'</span></div><p class="note" style="margin:4px 0 0">'+esc(p.desc)+'</p>';
+    p.qs.forEach(function(q){ h+='<div style="margin-top:8px"><label for="l-'+q.k+'">'+esc(q.q)+'</label><textarea id="l-'+q.k+'" data-l="'+q.k+'" placeholder="'+esc(q.ph||"")+'">'+esc(s[q.k])+'</textarea></div>'; });
+    if(p.ex) h+=hint(p.ex);
+    h+='</div>';
+  });
+  h+='<div class="card"><b>書いたあと</b><ul style="margin:6px 0 0;padding-left:18px">'; L.after.forEach(function(x){ h+='<li>'+esc(x)+'</li>'; });
+  h+='</ul><div style="margin-top:8px"><label for="l-copy">'+esc(L.copyLabel)+'</label><textarea id="l-copy" data-l="copy" style="min-height:44px">'+esc(s.copy)+'</textarea></div>'+(L.afterEx?hint(L.afterEx):'')+'</div>';
+  return h;
+}
+function lanternMd(L2){
+  var L=C.LANTERN, s=state.lantern; if(!L||!s) return;
+  var any=false, out=["## "+L.title,""];
+  L.parts.forEach(function(p){ p.qs.forEach(function(q){ if(s[q.k]){ any=true; out.push("- "+p.label+"｜"+q.q+"："+s[q.k]); } }); });
+  if(s.copy){ any=true; out.push("- キャッチコピー："+s.copy); }
+  if(any){ out.push(""); out.forEach(function(x){ L2.push(x); }); }
+}
 function decisionBar(){
   var d=cur(); var h='<div class="card"><div class="grid2"><div><label for="dsel">決めたいこと</label><select id="dsel" data-g="current">';
   state.decisions.forEach(function(x){ h+='<option value="'+x.id+'"'+(x.id===state.current?' selected':'')+'>'+esc(x.title)+(x.example?'（放送の例）':'')+'</option>'; });
@@ -335,7 +363,7 @@ function vSkills(){
 function vIdeas(){
   var d=cur(); var h='<h2>3. 選択肢を出す（スキル2：'+esc(SKILLS[1].name)+'）</h2>';
   h+='<div class="quote">'+T.qIdeas+'</div>';
-  h+=decisionBar(); if(!d) return h;
+  h+=decisionBar()+flameCard(); if(!d) return h;
   h+='<details class="card"><summary>放送の例：選択肢の出し方</summary><p>'+T.exIdeas+'</p></details>';
   var good=d.ideas.filter(function(i){return i.pick==="good";}).length, wild=d.ideas.filter(function(i){return i.pick==="wild";}).length;
   h+='<div class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><div><span class="big">'+d.ideas.length+'</span> <span class="note">個 出した</span></div><span class="note">'+(d.ideas.length<20?'まず20個まで、あと'+(20-d.ideas.length)+'個':d.ideas.length<30?'30個まで、あと'+(30-d.ideas.length)+'個':'30個を超えました。余裕があれば50〜100個')+'</span></div>';
@@ -354,7 +382,7 @@ function evalTargets(d){ var p=d.ideas.filter(function(i){return i.pick;}); retu
 function vEval(){
   var d=cur(); var h='<h2>4. 比べる（スキル3：'+esc(SKILLS[2].name)+'／スキル4：'+esc(SKILLS[3].name)+'）</h2>';
   h+='<div class="quote">'+T.qEval+'</div>';
-  h+=decisionBar(); if(!d) return h;
+  h+=decisionBar()+flameCard(); if(!d) return h;
   var list=evalTargets(d);
   if(!list.length) return h+'<p class="empty">「3. 選択肢を出す」で選択肢を入れると、ここで比べられます。</p>';
   if(!d.ideas.some(function(i){return i.pick;})) h+='<p class="note">5個に絞っていないので、出した選択肢を全部表示しています。</p>';
@@ -375,7 +403,7 @@ function vEval(){
 function vMeaning(){
   var d=cur(); var h='<h2>5. 意味を確かめる（スキル5：'+esc(SKILLS[4].name)+'）</h2>';
   h+='<div class="quote">'+T.qMeaning+'</div>';
-  h+=decisionBar(); if(!d) return h;
+  h+=decisionBar()+flameCard(); if(!d) return h;
   var m=d.meaning||(d.meaning={q1:"",q2:"",q3:"",checks:{}});
   h+='<details class="card"><summary>放送の例：意味が見いだせていないとき</summary><p>'+T.exMeaning+'</p></details>';
   var PHM=T.PHM;
@@ -394,7 +422,7 @@ function vMeaning(){
 function vShare(){
   var d=cur(); var h='<h2>6. 伝える（スキル1：'+esc(SKILLS[0].name)+'／スキル6：'+esc(SKILLS[5].name)+'）</h2>';
   h+='<div class="quote">'+T.qShare+'</div>';
-  h+=decisionBar(); if(!d) return h;
+  h+=decisionBar()+flameCard(); if(!d) return h;
   var s=d.share||(d.share={});
   var EXS=T.EXS;
   var PHS=T.PHS;
@@ -478,6 +506,7 @@ document.addEventListener("click",function(e){
 document.addEventListener("input",function(e){
   if(!C) return;
   var t=e.target, d=cur();
+  if(t.hasAttribute("data-l")){ (state.lantern||(state.lantern={}))[t.getAttribute("data-l")]=t.value; touch(false); return; }
   if(t.hasAttribute("data-t")){ tr()[t.getAttribute("data-t")]=t.value; touch(false); return; }
   if(t.hasAttribute("data-g")){ state[t.getAttribute("data-g")]=t.value; touch(t.tagName==="SELECT"); return; }
   if(!d) return;
